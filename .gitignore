@@ -1,0 +1,5 @@
+*.csv
+*.pth
+*.DS_Store
+*.pyc
+*-checkpoint.ipynb

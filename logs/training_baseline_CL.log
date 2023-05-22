@@ -1,0 +1,28 @@
+INFO:root:loaded model: bert-base-uncased
+INFO:root:loaded tokenizer: bert-base-uncased
+INFO:root:device used: cpu
+INFO:root:loaded datasets and data loaders
+INFO:root:======== Epoch 1 / 5 ========
+INFO:root:Training...
+INFO:root:loaded model: bert-base-uncased
+INFO:root:loaded tokenizer: bert-base-uncased
+INFO:root:device used: cpu
+INFO:root:loaded datasets and data loaders
+INFO:root:======== Epoch 1 / 5 ========
+INFO:root:Training...
+INFO:root:============================================
+INFO:root:START OF NEW TRAINING AT 1684706892.0004969
+INFO:root:loaded model: bert-base-uncased
+INFO:root:loaded tokenizer: bert-base-uncased
+INFO:root:device used: cpu
+INFO:root:loaded datasets and data loaders
+INFO:root:======== Epoch 1 / 5 ========
+INFO:root:Training...
+INFO:root:============================================
+INFO:root:START OF NEW TRAINING AT 2023-05-22 00:08:56
+INFO:root:loaded model: bert-base-uncased
+INFO:root:loaded tokenizer: bert-base-uncased
+INFO:root:device used: cpu
+INFO:root:loaded datasets and data loaders
+INFO:root:======== Epoch 1 / 5 ========
+INFO:root:Training...

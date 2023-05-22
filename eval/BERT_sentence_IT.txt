@@ -1,0 +1,38 @@
+INFO:root:============================================
+INFO:root:START OF EVALUATION AT 2023-05-22 16:16:37
+INFO:root:============================================
+INFO:root:START OF EVALUATION AT 2023-05-22 16:17:26
+INFO:root:IN DOMAIN TEST EVALUAION
+INFO:root:loaded dataset and dataloader
+INFO:root:start predicting on loaded data
+INFO:root:              precision    recall  f1-score   support
+
+           0       0.65      0.79      0.71       145
+           1       0.62      0.57      0.59       115
+           2       0.69      0.36      0.47        25
+           3       0.69      0.27      0.39        99
+           4       0.52      0.75      0.61       191
+           5       0.78      0.72      0.75       115
+           6       0.68      0.53      0.60       145
+
+    accuracy                           0.62       835
+   macro avg       0.66      0.57      0.59       835
+weighted avg       0.64      0.62      0.61       835
+
+INFO:root:OUT OF DOMAIN TEST EVALUAION
+INFO:root:loaded dataset and dataloader
+INFO:root:start predicting on loaded data
+INFO:root:              precision    recall  f1-score   support
+
+           0       0.62      0.54      0.58       326
+           1       0.64      0.64      0.64       201
+           2       0.44      0.67      0.53        12
+           3       0.12      0.26      0.16        23
+           4       0.53      0.62      0.57       434
+           5       0.52      0.62      0.57        86
+           6       0.43      0.30      0.35       256
+
+    accuracy                           0.54      1338
+   macro avg       0.47      0.52      0.49      1338
+weighted avg       0.54      0.54      0.53      1338
+
