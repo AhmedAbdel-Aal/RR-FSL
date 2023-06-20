@@ -4,4 +4,6 @@
 *.pyc
 *-checkpoint.ipynb
 *.pkl
-
+*events.out.*
+*.cpkt
+code/*/logs/lightning_logs/
