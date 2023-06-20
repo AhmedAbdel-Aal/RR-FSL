@@ -1,0 +1,83 @@
+PATH:
+code/baseline_BERT_only
+
+DESCRIPTION:
+naive baseline model. model is bert-base-uncased with feed forward layer on top for classification. BERT is not forzen. BERT generate embeddings, and a feed forward classify the embeddings.
+collecting all the documents in one big document. feed the model with each sentence individually. no contextual information about sequencing of sentences is considered. Train a separate model on the CL and on IT. evalue each model on its test set and on across-domain.
+
+RESULTS:
+CL on CL: 0.56
+CL on IT: 0.42
+IT on IT: 0.62
+IT on CL: 0.54
+
+
+==================================================
+PATH:
+code/baseline_hierarichal_BiLSTM/Hierarichal_BiLSTM_locally_BACTH-1
+
+DESCRIPTION:
+transform the documents of sentences into documents of embeddings using BERT bert-base-uncased. 
+model is two layers of BiLSTM to capture contextual information from the order of the embeddings. with feed forward layer on top for classification. feed the model with one document at a time. Thus, the model can process documents with arbitrary length.
+
+RESULTS:
+CL on CL: 0.33
+
+========================================================
+PATH:
+code/baseline_hierarichal_BiLSTM/Hierarichal_BiLSTM_locally-BERTBASE
+
+DESCRIPTION:
+transform the documents of sentences into documents of embeddings using BERT bert-base-uncased. 
+model is two layers of BiLSTM to capture contextual information from the order of the embeddings. with feed forward layer on top for classification. specify a maximum document length. if (length(doc) > maximum_doc_length) then split this documents into smaller documents. A batch size is the number of documents to feed the model at once. pytorch pad_sequences is used to pad batch that contain documents of length less than the maximum_doc_legnth.
+
+RESULTS:
+CL on CL: 0.39
+
+
+=========================================================
+PATH:
+code/copied/hier-bilstm-crf-baseline.ipynb
+
+DESCRIPTION:
+the experiment is from https://github.com/Exploration-Lab/Rhetorical-Roles/blob/main/Code/models/hier-bilstm-crf-baseline.ipynb
+The model is BERT -> BiLSTM -> CRF.
+
+RESULTS:
+CL on CL: 0.38
+
+
+============================================================
+PATH:
+code/prototypical/prototypical-CL.ipynb
+
+DESCRIPTION:
+a prototypical network with LSTM encoder over the BERT embeddings.
+train_labels_subset = [0,1,2,3]
+test_labels_subset = [4,5,6]
+The few shots was done on sentences with labels 4,5,6. Evaluation is done as follows, we pick k examples per class from which we determine the prototypes, and test the classification accuracy on all other examples. This can be seen as using the k examples per class as support set, and the rest of the dataset as a query set. We iterate through the dataset such that each example has been once included in a support set. The average performance over all support sets tells us how well we can expect ProtoNet to perform when seeing only k examples per class.
+
+
+RESULTS:
+CL on CL:
+    F1-score for k=2: 49.23% (+-10.41%)
+    F1-score for k=4: 51.08% (+-9.09%)
+    F1-score for k=8: 51.74% (+-8.35%)
+    F1-score for k=16: 52.54% (+-7.76%)
+    F1-score for k=32: 53.31% (+-7.41%)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
