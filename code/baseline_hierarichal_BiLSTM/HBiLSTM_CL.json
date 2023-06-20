@@ -1,0 +1,35 @@
+{
+  "model": {
+    "name": "bert-base-uncased",
+    "save_name": "BERT_sentence_CL"
+  },
+  "training": {
+    "seed": 42,
+    "batch_size": 40,
+    "learning_rate": 0.01,
+    "epochs": 300,
+    "max_grad_norm": 1,
+    "lr_epoch_decay": 0.9,
+    "num_warmup_steps": 1000
+  },
+  "data": {
+    "root_path": "../data/",
+    "train_data_path": "train_cl.csv",
+    "valid_data_path": "dev_cl.csv",
+    "test_data_path":  "test_cl.csv",
+    "num_label": 7, 
+    "mapper": "compressed"
+  },
+  "output": {
+    "save_model_path": "../models/model_bert_sentence_CL.pth",
+    "log_path": "../logs/training_baseline_CL.log",
+    "plots_path": "../plots/"
+  },
+  "eval":{
+    "batch_size": 32,
+    "device": "cpu",
+    "in_domain_test_path": "../data/test_cl.csv",
+    "out_domain_test_path": "../data/test_it.csv",
+    "save_results_path": "../eval/BERT_sentence_CL.txt"
+  }
+}
