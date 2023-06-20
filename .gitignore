@@ -6,4 +6,4 @@
 *.pkl
 *events.out.*
 *.cpkt
-code/*/logs/lightning_logs/
+code/*/logs/
