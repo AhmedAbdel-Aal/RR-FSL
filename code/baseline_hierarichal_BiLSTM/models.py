@@ -38,12 +38,7 @@ class CRFOutputLayer(torch.nn.Module):
             predicted_label = [pad_sequence_to_length(x, desired_length=max_sequence) for x in predicted_label]
             predicted_label = torch.tensor(predicted_label)
             outputs["predicted_label"] = predicted_label
-
-            #log_denominator = self.crf._input_likelihood(logits, mask)
-            #log_numerator = self.crf._joint_likelihood(logits, predicted_label, mask)
-            #log_likelihood = log_numerator - log_denominator
-            #outputs["log_likelihood"] = log_likelihood
-
+            outputs["logits"] = logits
         return outputs
 
 class CRFPerTaskOutputLayer(torch.nn.Module):
@@ -218,7 +213,7 @@ class BertHSLN(torch.nn.Module):
 
         self.crf = CRFOutputLayer(in_dim=input_dim, num_labels=self.num_labels)
 
-    def forward(self, batch, labels=None):
+    def forward(self, batch, labels=None, get_embeddings = False):
 
         documents, sentences, tokens = batch["input_ids"].shape
 
@@ -248,8 +243,10 @@ class BertHSLN(torch.nn.Module):
         sentence_embeddings_encoded = self.sentence_lstm(sentence_embeddings, sentence_mask)
         # in Jin et al. only here dropout
         sentence_embeddings_encoded = self.dropout(sentence_embeddings_encoded)
+        
 
         output = self.crf(sentence_embeddings_encoded, sentence_mask, labels)
 
-
+        if get_embeddings:
+          return output, sentence_embeddings_encoded
         return output
