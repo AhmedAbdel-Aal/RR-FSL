@@ -5,30 +5,15 @@ Rhetorical Role Labeling using Few-Shot Learning Techniques
 - This repo is for code developed during TUM practrical course: Legal NLP practical lab @2023
 
 
-## Repo structure
-#### data:
-The data used so far is from https://github.com/Exploration-Lab/Rhetorical-Roles. 
 
-The data is in json format, run the ./data/Parse_data_to_csvs.ipynb to transform data into 6 csv files. 
+## Experiments Catalogue
+for more detailed description about each experiment, check experiments_catalogue.txt
 
-The files are (train.csv, dev.csv, test.csv) for two different domains of Rhetorical role data (CL and IT).
+| Path                                            | Description                                                                                                                                           | CL on CL                                  | CL on IT        | IT on IT        | IT on CL        |
+|-------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------|-----------------|-----------------|-----------------|
+| code/baseline_BERT_only                         | naive baseline model. model is bert-base-uncased with feed forward layer on top for classification. BERT is not forzen. BERT generate embeddings.     | 0.56                                      | 0.42            | 0.62            | 0.54            |
+| code/baseline_hierarichal_BiLSTM/Hierarichal... | transform the documents of sentences into documents of embeddings using BERT bert-base-uncased.                                                     | 0.33                                      | -               | -               | -               |
+| code/baseline_hierarichal_BiLSTM/Hierarichal... | transform the documents of sentences into documents of embeddings using BERT bert-base-uncased.                                                     | 0.39                                      | -               | -               | -               |
+| code/copied/hier-bilstm-crf-baseline.ipynb      | the experiment is from [here](https://github.com/Exploration-Lab/Rhetorical-Roles/blob/main/Code/models/hier-bilstm-crf-baseline.ipynb).                | 0.38                                      | -               | -               | -               |
+| code/prototypical/prototypical-CL.ipynb         | a prototypical network with LSTM encoder over the BERT embeddings.                                                                                    | F1-score for k=2: 49.23% (+-10.41%)<br>F1-score for k=4: 51.08% (+-9.09%)<br>F1-score for k=8: 51.74% (+-8.35%)<br>F1-score for k=16: 52.54% (+-7.76%)<br>F1-score for k=32: 53.31% (+-7.41%)| -               | -               | -               |
 
-#### code
-files in this directory are the files needed to run an experiment. Assuming the experiments has name of <exp_name>, the needed files are:
-  - <exp_name>_config.json
-  - data.py
-  - models.py
-  - evaluation.py
-  - utils.py
-  - <exp_name>_colab.ipynb
-  - <exp_name>_locally.ipynb
-
-read the directory README.md for more information.
-#### eval
-results from evaluation scripts are saved here.
-
-#### log
-logs created during training.
-
-#### models
-where created models are saved.
