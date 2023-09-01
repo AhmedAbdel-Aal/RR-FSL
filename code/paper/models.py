@@ -181,8 +181,8 @@ class BertHSLN(torch.nn.Module):
         sentence_embeddings_encoded = self.dropout(sentence_embeddings_encoded)
         
 
-        #output = self.classifier(sentence_embeddings_encoded)
-        output = self.crf(sentence_embeddings_encoded, sentence_mask, labels)
+        output = self.classifier(sentence_embeddings_encoded)
+        #output = self.crf(sentence_embeddings_encoded, sentence_mask, labels)
         
         if get_embeddings:
           return output, sentence_embeddings_encoded
