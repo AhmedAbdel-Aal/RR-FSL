@@ -21,6 +21,7 @@ import copy
 import functools
 import operator
 from sklearn.metrics import classification_report
+
 def batch_to_tensor(b):
     # convert to dictionary of tensors and pad the tensors
     max_sentence_len = 128
@@ -36,18 +37,23 @@ def batch_to_tensor(b):
             # pad the sentences to max sentence len
             for i, sentence in enumerate(v):
                 v[i] = pad_sequence_to_length(sentence, desired_length=max_sentence_len)
-        if k!='doc_name' and k!= 'label_ids':
-            result[k] = torch.tensor(v).unsqueeze(0)
+        
+        if k != 'doc_name' and k != 'label_ids':
+            result[k] = torch.tensor(v).unsqueeze(0).clone().detach()
         elif k == 'label_ids':
-            result[k] = torch.tensor(v)
+            result[k] = torch.tensor(v).clone().detach()
         else:
             result[k] = v
     return result
 
 
-def training_step(model, optimizer, scheduler, data_loader, device, crf = True):
+
+from sklearn.metrics import f1_score
+import numpy as np
+
+def training_step(model, optimizer, scheduler, data_loader, device, crf=False):
     model.train()  # Set the model to train mode
-    train_loss = {'cls':0}
+    train_loss = {'cls': 0}
     train_correct = 0
     train_total = 0
 
@@ -56,145 +62,144 @@ def training_step(model, optimizer, scheduler, data_loader, device, crf = True):
 
     for batch_idx, batch in enumerate(data_loader):
         batch = batch_to_tensor(batch)
-        # handle an empty batch --> error in data preparation
+        
+        # Handle an empty batch --> error in data preparation
         if batch["input_ids"].shape[1] == 0:
-          continue
+            print("Skipping an empty batch.")
+            continue
 
+        optimizer.zero_grad()  # Zero out gradients
 
         for key, tensor in batch.items():
             batch[key] = tensor.to(device)
-        #print(batch['input_ids'].shape)
+        
         labels = batch['label_ids']
-        #print(labels.shape)
-        #optimizer.zero_grad()
 
         # Forward pass
         outputs, embeddings = model(batch, labels, get_embeddings=True)
 
-        
-
         # Calculate loss
-        if crf:
-          classification_loss = outputs['loss']
-        else:
-          logits = outputs.squeeze()
-          classification_loss = F.cross_entropy(logits, labels.squeeze()).detach().item()
+        classification_loss = outputs['loss']
 
-        train_loss['cls'] = train_loss['cls'] + classification_loss
+        train_loss['cls'] += classification_loss.item()
+
         if batch_idx % 10 == 0:
-          print(f'after {batch_idx} step: cls_loss {classification_loss}')
-
-
+            print(f'After {batch_idx} steps: classification_loss {classification_loss.item()}')
 
         # Backward pass and optimization
-        loss = classification_loss
-        loss.backward()
+        classification_loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         optimizer.step()
-        optimizer.zero_grad()
 
     scheduler.step()
+
     # Calculate epoch statistics
     train_loss['cls'] = train_loss['cls'] / len(data_loader)
 
     return train_loss
 
 
+
+from sklearn.metrics import f1_score
+import functools
+import operator
+import torch
+
 def validation_step(model, data_loader, device):
-    model.eval()  # Set the model to evaluation mode
+    model.eval()
     dev_loss = 0.0
-    dev_correct = 0
-    dev_total = 0
     all_labels = []
     all_predicted = []
 
-
-    for batch in data_loader:
-        # handle an empty batch --> error in data preparation
-        with torch.no_grad():
+    with torch.no_grad():
+        for batch in data_loader:
             batch = batch_to_tensor(batch)
+            
             if batch["input_ids"].shape[1] == 0:
-              continue
+                print("Skipping an empty batch.")
+                continue
+
             for key, tensor in batch.items():
-               batch[key] = tensor.to(device)
+                batch[key] = tensor.to(device)
+            
             labels = batch['label_ids']
-            # Forward pass
             outputs = model(batch)
 
-
-            # Calculate loss
-            #print(logits.shape, labels.shape)
             logits = outputs['logits'].squeeze()
             dev_loss += F.cross_entropy(logits, labels.squeeze()).item()
+            
             predicted_label = outputs['predicted_label']
 
+            # Debugging: Print shapes
+            #print(f"Labels shape: {labels.shape}, Predicted shape: {predicted_label.shape}")
 
-
-            # save all epoch labels and predicted labels
             all_labels.extend(labels.cpu().numpy())
             all_predicted.extend(predicted_label.cpu().numpy())
 
-    # Calculate epoch statistics
-    all_predicted = functools.reduce(operator.iconcat, all_predicted, [])
+    #all_predicted = functools.reduce(operator.iconcat, all_predicted, [])
     all_labels = functools.reduce(operator.iconcat, all_labels, [])
+    
+    #print(f"Length of all_labels: {len(all_labels)}, Length of all_predicted: {len(all_predicted)}")
+
     f1 = f1_score(all_labels, all_predicted, average='macro')
     dev_loss /= len(data_loader)
+    
     return f1, dev_loss
 
 
 
-    from sklearn.metrics import classification_report
 
-def testing_step(model, data_loader, device,):
+from sklearn.metrics import classification_report
+
+from sklearn.metrics import classification_report
+import functools
+import operator
+import torch
+
+def testing_step(model, data_loader, device):
     model.eval()  # Set the model to evaluation mode
+    model.to(device)  # Move model to device
+
     predictions = []
     true_labels = []
     test_loss = 0.0
     test_correct = 0
     test_total = 0
 
-    model.to(device)
-
-    for batch in data_loader:
-        with torch.no_grad():
-
+    with torch.no_grad():
+        for batch in data_loader:
             batch = batch_to_tensor(batch)
+            
             for key, tensor in batch.items():
-               batch[key] = tensor.to(device)
+                batch[key] = tensor.to(device)
+            
             labels = batch['label_ids']
+            
             # Forward pass
             outputs = model(batch)
-            #max_sequence_length = outputs.size(1)
-            #tlengths = torch.tensor(lengths).unsqueeze(1)
-            #mask = torch.arange(max_sequence_length).unsqueeze(0).to(device) < tlengths
-            #masked_output = outputs[mask]
             logits = outputs['logits'].squeeze()
             predicted_labels = outputs['predicted_label']
 
-            # Calculate loss
-            #loss = criterion(masked_output, labels)
-            #test_loss += loss.item()
-
             # Store predictions and true labels
-            #predicted_labels = masked_output.argmax(dim=-1)
             predictions.extend(predicted_labels.cpu().numpy())
             true_labels.extend(labels.cpu().numpy())
 
             # Calculate accuracy
             predicted_labels = predicted_labels.to('cpu')
             labels = labels.to('cpu')
-
-
             correct = (predicted_labels == labels).sum().item()
             test_correct += correct
             test_total += labels.shape[0]
 
-    predictions = functools.reduce(operator.iconcat, predictions, [])
+    # Flatten lists
+    #predictions = functools.reduce(operator.iconcat, predictions, [])
     true_labels = functools.reduce(operator.iconcat, true_labels, [])
 
+    # Calculate statistics
     test_loss /= len(data_loader)
     test_accuracy = test_correct / test_total
 
     print(f"Testing Loss: {test_loss:.4f} - Testing Accuracy: {test_accuracy:.4f}")
     print(classification_report(true_labels, predictions))
+
     return test_loss, test_accuracy, predictions, true_labels

@@ -6,7 +6,8 @@ import copy
 from transformers import BertModel
 
 from allennlp.modules import ConditionalRandomField
-
+import torch.nn as nn
+import torch.nn.functional as F
 import torch
 import math
 
@@ -113,7 +114,7 @@ class BertHSLN(torch.nn.Module):
     '''
     def __init__(self, config, num_labels):
         super(BertHSLN, self).__init__()
-
+        self.use_crf = config['use_crf']
         self.num_labels = num_labels
         self.bert = BertTokenEmbedder(config)
 
@@ -172,7 +173,7 @@ class BertHSLN(torch.nn.Module):
         # in Jin et al. only here dropout
         sentence_embeddings = self.dropout(sentence_embeddings)
 
-
+        
         sentence_mask = batch["sentence_mask"]
 
         # shape: (documents, sentence, 2*lstm_hidden_size)
@@ -181,9 +182,27 @@ class BertHSLN(torch.nn.Module):
         sentence_embeddings_encoded = self.dropout(sentence_embeddings_encoded)
         
 
-        output = self.classifier(sentence_embeddings_encoded)
-        #output = self.crf(sentence_embeddings_encoded, sentence_mask, labels)
-        
+        logits = self.classifier(sentence_embeddings_encoded)
+        if self.use_crf:
+          output = self.crf(sentence_embeddings_encoded, sentence_mask, labels)
+        else:
+          output = {}
+          if labels is not None:
+            logits = logits.squeeze()
+            labels = labels.squeeze()
+            predicted_labels = torch.argmax(logits, dim=1)
+            output['predicted_label'] = predicted_labels
+            
+            loss = F.cross_entropy(logits, labels)
+            output['loss'] = loss
+            output['logits']=logits
+          else:
+            logits = logits.squeeze()
+            predicted_labels = torch.argmax(logits, dim=1)
+            output['predicted_label'] = predicted_labels
+            output['logits']=logits
+
+
         if get_embeddings:
           return output, sentence_embeddings_encoded
         
